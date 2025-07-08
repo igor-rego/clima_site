@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima em Tempo Real | Weather Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js CDN for dynamic charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Meta tags for better SEO and social sharing -->
+    <meta name="description" content="Dashboard de clima em tempo real com dados precisos, gráficos interativos e previsões detalhadas. Monitore as condições climáticas de qualquer cidade do mundo.">
+    <meta name="keywords" content="clima, previsão do tempo, dashboard, meteorologia, temperatura, umidade, vento">
+    <meta name="author" content="Weather Dashboard">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="Clima em Tempo Real | Weather Dashboard">
+    <meta property="og:description" content="Dashboard de clima em tempo real com dados precisos e gráficos interativos">
+    <meta property="og:image" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="Clima em Tempo Real | Weather Dashboard">
+    <meta property="twitter:description" content="Dashboard de clima em tempo real com dados precisos e gráficos interativos">
+    <meta property="twitter:image" content="">
+</head>
+<body>
+    <!-- Main dashboard container -->
+    <div class="dashboard-container">
+        <!-- Header section with title and controls -->
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1 class="dashboard-title">
+                        <em>🌤️ Clima em Tempo Real</em>
+                        <span class="subtitle">Weather Dashboard</span>
+                    </h1>
+                    
+                    <!-- Location and refresh controls -->
+                    <div class="header-controls">
+                        <div class="location-selector">
+                            <input 
+                                type="text" 
+                                id="citySearch" 
+                                class="form-control search-input" 
+                                placeholder="Buscar cidade... / Search city..."
+                                autocomplete="off"
+                                aria-label="Buscar cidade"
+                            >
+                            <button 
+                                id="getCurrentLocation" 
+                                class="btn btn--secondary btn--sm"
+                                aria-label="Usar minha localização"
+                            >
+                                📍 Minha Localização
+                            </button>
+                        </div>
+                        
+                        <div class="refresh-controls">
+                            <button 
+                                id="manualRefresh" 
+                                class="btn btn--outline btn--sm"
+                                aria-label="Atualizar dados"
+                            >
+                                🔄 Atualizar
+                            </button>
+                            <div class="status-indicator">
+                                <span id="lastUpdate" class="status status--info">
+                                    Carregando... / Loading...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content area -->
+        <main class="dashboard-content">
+            <div class="container">
+                <!-- Current weather conditions card -->
+                <section class="current-weather-section" aria-labelledby="current-weather-title">
+                    <div class="card current-weather-card">
+                        <div class="card__body">
+                            <div class="loading-state" id="currentWeatherLoading">
+                                <div class="loading-spinner" aria-hidden="true"></div>
+                                <span>Carregando dados do clima... / Loading weather data...</span>
+                            </div>
+                            
+                            <div class="current-weather-content" id="currentWeatherContent" style="display: none;">
+                                <div class="current-location">
+                                    <h2 id="currentLocationName" id="current-weather-title">Localização / Location</h2>
+                                    <span id="currentDateTime" class="current-time"></span>
+                                </div>
+                                
+                                <div class="current-conditions">
+                                    <div class="temperature-display">
+                                        <span id="currentTemp" class="temperature" aria-label="Temperatura atual">--°</span>
+                                        <span id="weatherDescription" class="weather-desc">--</span>
+                                    </div>
+                                    
+                                    <div class="weather-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Sensação Térmica / Feels Like</span>
+                                            <span id="feelsLike" class="detail-value">--°</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Umidade / Humidity</span>
+                                            <span id="humidity" class="detail-value">--%</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Vento / Wind</span>
+                                            <span id="windSpeed" class="detail-value">-- km/h</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Precipitação / Precipitation</span>
+                                            <span id="precipitation" class="detail-value">-- mm</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts section with period filters -->
+                <section class="charts-section" aria-labelledby="charts-title">
+                    <div class="section-header">
+                        <h3 id="charts-title">Tendências Climáticas / Weather Trends</h3>
+                        
+                        <!-- Period filter buttons -->
+                        <div class="period-filters" role="group" aria-label="Filtros de período">
+                            <button class="btn btn--outline filter-btn active" data-period="24h" aria-pressed="true">24h</button>
+                            <button class="btn btn--outline filter-btn" data-period="7d" aria-pressed="false">7 dias / days</button>
+                            <button class="btn btn--outline filter-btn" data-period="30d" aria-pressed="false">30 dias / days</button>
+                        </div>
+                    </div>
+
+                    <!-- Charts grid -->
+                    <div class="charts-grid">
+                        <!-- Temperature chart -->
+                        <div class="chart-container">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Temperatura / Temperature</h4>
+                                    <div class="chart-wrapper">
+                                        <canvas id="temperatureChart" width="400" height="200" aria-label="Gráfico de temperatura"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Humidity chart -->
+                        <div class="chart-container">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Umidade / Humidity</h4>
+                                    <div class="chart-wrapper">
+                                        <canvas id="humidityChart" width="400" height="200" aria-label="Gráfico de umidade"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wind chart -->
+                        <div class="chart-container">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Velocidade do Vento / Wind Speed</h4>
+                                    <div class="chart-wrapper">
+                                        <canvas id="windChart" width="400" height="200" aria-label="Gráfico de velocidade do vento"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Precipitation chart -->
+                        <div class="chart-container">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Precipitação / Precipitation</h4>
+                                    <div class="chart-wrapper">
+                                        <canvas id="precipitationChart" width="400" height="200" aria-label="Gráfico de precipitação"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Forecast section -->
+                <section class="forecast-section" aria-labelledby="forecast-title">
+                    <h3 id="forecast-title">Previsão de 7 Dias / 7-Day Forecast</h3>
+                    <div class="forecast-grid" id="forecastGrid" role="list" aria-label="Previsão de 7 dias">
+                        <!-- Forecast cards will be dynamically generated -->
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer with additional info -->
+        <footer class="dashboard-footer">
+            <div class="container">
+                <p>
+                    Dados fornecidos por <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo API</a> | 
+                    Atualização automática a cada 5 minutos / Auto-refresh every 5 minutes
+                </p>
+                <p style="margin-top: 0.5rem; font-size: 0.75rem;">
+                    <kbd>Ctrl+R</kbd> para atualizar / <kbd>Ctrl+L</kbd> para localização atual
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Error modal for API failures -->
+    <div id="errorModal" class="error-modal" style="display: none;" role="dialog" aria-labelledby="error-title" aria-describedby="error-message">
+        <div class="error-content">
+            <h3 id="error-title">Erro de Conexão / Connection Error</h3>
+            <p id="errorMessage">Não foi possível carregar os dados climáticos. / Unable to load weather data.</p>
+            <button id="closeError" class="btn btn--primary">OK</button>
+        </div>
+    </div>
+
+    <!-- Loading overlay for better UX -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;" aria-hidden="true">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript application -->
+    <script src="app.js"></script>
+</body>
+</html>
